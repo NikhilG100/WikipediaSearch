@@ -6,4 +6,16 @@
     <color name="image_border_start">#40990000</color>
     <color name="image_border_end">#FF660000</color>
     <color name="image_border_center">#FFFF3333</color>
+
+    <color name="Color_1">#5EACF1</color>
+    <color name="Color_2">#f3e59d</color>
+    <color name="Color_3">#f3d89d</color>
+    <color name="Color_4">#ff9d21</color>
+    <color name="Color_5">#ff8321</color>
+    <color name="Color_6">#c35ef9</color>
+    <color name="Color_7">#7d5eeb</color>
+    <color name="Color_8">#ab9ae9</color>
+    <color name="Color_9">#56cdeb</color>
+    <color name="Color_10">#da3030</color>
+
 </resources>
