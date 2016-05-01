@@ -32,7 +32,6 @@ public class SearchWikipedia {
     private static String[] thumbnailURLS = new String[50];
     private int thumbnailCnt = 0;
     private NotifySearchResults notifier;
-    //private boolean bAsyncTaskInProgress = false;      //Flag to keep track of async task in progress
 
     public void setURL(String str) {
         searchUrlString = str;
@@ -54,6 +53,8 @@ public class SearchWikipedia {
 
     public String[] getThumbnailURLS() { return thumbnailURLS; }
 
+    public int getThumbnailCount() { return thumbnailCnt; }
+
     private class DownloadWebpageTask extends AsyncTask<String, Integer, String> {
 
         @Override
@@ -73,7 +74,6 @@ public class SearchWikipedia {
             //Dynamically update table image view here
             Log.d(TAG, "OnPostExecute" + result);
             nContinuedSearchCounter++;
-            //bAsyncTaskInProgress = false;
 
             if (!offsetValueForContinuedSearch.isEmpty() && nContinuedSearchCounter < 5) {
 
@@ -104,8 +104,8 @@ public class SearchWikipedia {
                 conn.setRequestMethod("GET");
                 conn.setDoInput(true);
                 if (isCancelled()) {
-                    publishProgress(USER_CANCELLED); //Notify your activity that you had canceled the task
-                    return (null); // don't forget to terminate this method
+                    publishProgress(USER_CANCELLED);
+                    return (null);
                 }
                 conn.connect();
                 int response = conn.getResponseCode();
@@ -142,6 +142,7 @@ public class SearchWikipedia {
         //This method parsers JSON URL from Wikipedia and extracts thumbnail info associated with page.
         public void getJSONFromUrl(InputStream is) throws IOException {
             Boolean bThumbnailFound = false;
+
             try {
                 reader = new JsonReader(new InputStreamReader(is, "UTF-8"));
 
@@ -198,6 +199,7 @@ public class SearchWikipedia {
                                     }
                                 }
                                 if (!bThumbnailFound) {
+                                    String noImageURI = "drawable://" + R.drawable.no_image;
                                     setImageURL("http://www.emgreenfield.com/UploadedFiles/Product/no_image.png");
                                 } else {
                                     bThumbnailFound = false;
