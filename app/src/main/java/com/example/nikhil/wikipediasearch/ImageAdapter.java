@@ -18,32 +18,22 @@ package com.example.nikhil.wikipediasearch;
 
 
 import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.graphics.Color;
-import android.graphics.Point;
-import android.graphics.PorterDuff;
-import android.graphics.Rect;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.BaseAdapter;
-import android.widget.GridView;
 import android.widget.ImageView;
 import com.squareup.picasso.Picasso;
 
-import java.net.URL;
 import java.util.Arrays;
 
 public class ImageAdapter extends BaseAdapter {
 
     private static String[] URLS = new String[50];
     private int cnt = 0;
-    private Animator mCurrentAnimator;
-    private int mShortAnimationDuration;
     private final String TAG = "Image Search";
 
     public int getCount() {
@@ -64,9 +54,10 @@ public class ImageAdapter extends BaseAdapter {
     public View getView(int position, View view, ViewGroup parent) {
         if (view == null) {
             view = new ImageView(parent.getContext());
-            view.setPadding(6, 6, 6, 6);
+            view.setPadding(6, 2, 6, 2);
             //view.getBackground().setColorFilter(Color.parseColor("#00ff00"), PorterDuff.Mode.DARKEN);
-            //view.setBackgroundColor(Color.GREEN);
+            view.setBackgroundColor(ContextCompat.getColor(parent.getContext(), R.color.Color_1));
+
             view.invalidate();
         }
 
@@ -75,8 +66,10 @@ public class ImageAdapter extends BaseAdapter {
             Picasso.with(parent.getContext())
                     .load(URLS[position])
                     .noFade()
-                    .resize(width/5, width/5)
+                    .resize(width/4, width/4)
                     .centerCrop()
+                    .error(R.drawable.no_image)
+                    .placeholder(R.drawable.loading_image)
                     .into((ImageView)view);
             }
 
@@ -98,18 +91,20 @@ public class ImageAdapter extends BaseAdapter {
         return view;
     }
 
-    public String[] getURLArray() { return URLS;}
+    //public String[] getURLArray() { return URLS;}
 
-    public void setImageURL(String imgURL)  {
-        URLS[cnt++] = imgURL;
-    }
+    //public void setImageURL(String imgURL)  {
+    //    URLS[cnt++] = imgURL;
+    //}
 
     public void resetArray() {
-        Arrays.fill(URLS, null);
+        Arrays.fill(URLS, "http://www.emgreenfield.com/UploadedFiles/Product/no_image.png");
         cnt = 0;
     }
 
-    public void setArray(String [] strArray) { URLS = strArray; }
+    public void setArray(String [] strArray) {
+        URLS = strArray;
+    }
 
     private void zoomImageFromThumb(final View thumbView, int imageId) {
         // If there's an animation in progress, cancel it immediately and
@@ -117,14 +112,11 @@ public class ImageAdapter extends BaseAdapter {
         int startIndex = 0;
         int lastIndex = 0;
 
-        if (mCurrentAnimator != null) {
-            mCurrentAnimator.cancel();
-        }
-
         // Load the high-resolution "zoomed-in" image.
         final ImageView expandedImageView = (ImageView) ((Activity) thumbView.getContext())
                 .findViewById(R.id.expanded_image);
 
+        expandedImageView.setBackgroundColor(ContextCompat.getColor(thumbView.getContext(), R.color.Color_1));
         String newURL = URLS[imageId].replace("/thumb", "");
 
         lastIndex = newURL.lastIndexOf("/");
@@ -141,6 +133,8 @@ public class ImageAdapter extends BaseAdapter {
                 .noFade()
                 .resize(width, height/2)
                 .centerCrop()
+                .error(R.drawable.no_image)
+                .placeholder(R.drawable.progress_animation)
                 .into((ImageView)expandedImageView);
 
         Log.d(TAG,"setOnClickListener" + newURL);
