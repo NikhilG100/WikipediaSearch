@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/searchEditText"
         android:inputType="text"
-        android:text="cat"
+        android:text="Search Wikipedia"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
@@ -40,26 +40,27 @@
         android:layout_height="fill_parent"
         android:drawSelectorOnTop="true"
         android:gravity="center"
-        android:numColumns="5"
+        android:numColumns="4"
         android:focusable="true"
         android:clickable="true"
         android:layout_below="@+id/searchButton"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="37dp"
+        android:layout_marginTop="10dp"
+        android:layout_margin="5dp"
         android:fastScrollEnabled="false"
         android:visibility="invisible"
         />
 
-    <ImageView
-        android:id="@+id/expanded_image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="@string/app_name"
-        android:visibility="invisible"
-        android:background="@android:color/white"
-        android:layout_below="@+id/searchButton"
-        android:layout_marginTop="37dp"
-        style="@style/myImageView"/>
+        <ImageView
+            android:id="@+id/expanded_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/app_name"
+            android:visibility="invisible"
+            android:background="@android:color/white"
+            android:layout_below="@+id/searchButton"
+            android:layout_marginTop="37dp"
+            style="@style/myImageView"/>
 
 </RelativeLayout>
