@@ -32,6 +32,7 @@ public class SearchWikipedia {
     private static String[] thumbnailURLS = new String[50];
     private int thumbnailCnt = 0;
     private NotifySearchResults notifier;
+    boolean bSearchIsCancelled = false;
 
     public void setURL(String str) {
         searchUrlString = str;
@@ -43,8 +44,16 @@ public class SearchWikipedia {
 
     public void search() {
         thumbnailCnt = 0;
+        bSearchIsCancelled = false;
         webpageTask = new DownloadWebpageTask();
         webpageTask.execute(searchUrlString);
+    }
+
+    public void cancelSearch() {
+        Log.d(TAG, "Search is cancelled. Setting webpage task flag. \n");
+        webpageTask.cancel(true);
+        bSearchIsCancelled = true;
+        thumbnailCnt = 0;
     }
 
     public void setImageURL(String imgURL)  {
@@ -72,20 +81,33 @@ public class SearchWikipedia {
         @Override
         protected void onPostExecute(String result) {
             //Dynamically update table image view here
-            Log.d(TAG, "OnPostExecute" + result);
-            nContinuedSearchCounter++;
+            Log.d(TAG, "OnPostExecute \n");
 
-            if (!offsetValueForContinuedSearch.isEmpty() && nContinuedSearchCounter < 5) {
-
-                notifier.OnSearchInProgress(); //Notify main UI thread, that search is still in progress.
-
-                newUrlString = searchUrlString + "&gpsoffset=" + offsetValueForContinuedSearch;
-                new DownloadWebpageTask().execute(newUrlString);
+            if (bSearchIsCancelled) {
+                nContinuedSearchCounter = 0;
+                notifier.OnSearchCancelled();
             }
             else {
-                notifier.OnSearchCompleted();
-            }
+                nContinuedSearchCounter++;
 
+                if (!offsetValueForContinuedSearch.isEmpty() && nContinuedSearchCounter < 5) {
+
+                    notifier.OnSearchInProgress(); //Notify main UI thread, that search is still in progress.
+
+                    newUrlString = searchUrlString + "&gpsoffset=" + offsetValueForContinuedSearch;
+                    new DownloadWebpageTask().execute(newUrlString);
+                } else {
+                    notifier.OnSearchCompleted();
+                }
+            }
+        }
+
+        @Override
+        protected void onCancelled(String result) {
+            // Runs on UI thread after cancel() is invoked
+            // and doInBackground() has finished/returned
+
+            notifier.OnSearchCancelled();
         }
 
         // Given a URL, establishes an HttpUrlConnection and retrieves
@@ -95,7 +117,7 @@ public class SearchWikipedia {
             InputStream is = null; //Input stream -
             URL url = new URL(myurl);
 
-            Log.d(TAG, "The URL is: " + myurl);
+            Log.d(TAG, "\n The URL is: " + myurl);
             try {
 
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -109,13 +131,18 @@ public class SearchWikipedia {
                 }
                 conn.connect();
                 int response = conn.getResponseCode();
-                Log.d(TAG, "The response is: " + response);
+                //Log.d(TAG, "The response is: " + response);
 
                 is = conn.getInputStream();
 
                 publishProgress(CONNECTION_SUCCESS);
 
                 getJSONFromUrl(is);
+
+                if (isCancelled()) {
+                    publishProgress(USER_CANCELLED);
+                    return (null);
+                }
 
                 return myurl;
             } finally {
@@ -129,6 +156,7 @@ public class SearchWikipedia {
         protected void onProgressUpdate(Integer... errorCode) {
             switch (errorCode[0]) {
                 case USER_CANCELLED:
+                    Log.d(TAG, "User cancelled search");
                     break;
                 case NETWORK_ERROR:
                     break;
