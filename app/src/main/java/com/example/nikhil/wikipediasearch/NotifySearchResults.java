@@ -6,4 +6,6 @@ package com.example.nikhil.wikipediasearch;
 public interface NotifySearchResults {
     void OnSearchCompleted();
     void OnSearchInProgress();
+    void OnSearchCancelled();
+    void OnSearchFailed();
 }
