@@ -8,6 +8,8 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -50,13 +52,13 @@ public class MainActivity extends AppCompatActivity implements NotifySearchResul
         gridAdapter = new ImageAdapter();
 
         //Key listener for ENTER key. As soon as ENTER key is pressed, send HTTP request to Wikipedia.
-        urlText.setOnKeyListener(new View.OnKeyListener() {
+        /*urlText.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
 
                gridView.setVisibility(View.INVISIBLE);
 
                // If the event is a key-down event on the "enter" button
-               if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+               if ((event.getAction() == KeyEvent.ACTION_DOWN) /*&& (keyCode == KeyEvent.KEYCODE_ENTER)) {
                     // Perform action on key press
                    if (!urlText.getText().toString().isEmpty())
                       StartSearch(v);
@@ -65,6 +67,36 @@ public class MainActivity extends AppCompatActivity implements NotifySearchResul
                }
                return false;
             }
+        });*/
+
+        urlText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                //here is your code
+                if (urlText.getText().toString().isEmpty())
+                {
+                    gridView.setVisibility(gridView.INVISIBLE);
+                }
+            }
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count,
+                                          int after) {
+                // TODO Auto-generated method stub
+            }
+            @Override
+            public void afterTextChanged(Editable s) {
+
+                // Cancel search if already in progress
+                if (bSearchInProgress) {
+                    Log.d(TAG, "Cancelling search \n");
+                    /* If search is already in progress, cancel the search, before starting new search */
+                    searchTask.cancelSearch();
+                 }
+                // Start search otherwise
+                else if (!urlText.getText().toString().isEmpty())
+                    StartSearch();
+
+            }
         });
 
         //Search button click listener for Search button. As soon as user clicks, send HTTP request to Wikipedia.
@@ -72,18 +104,19 @@ public class MainActivity extends AppCompatActivity implements NotifySearchResul
             //@Override
             public void onClick(View view) {
                 if (!urlText.getText().toString().isEmpty())
-                   StartSearch(view);
+                   StartSearch();
             }
         });
 
     }
 
     //Utility function to send network request
-    private void StartSearch(View view) {
+    private void StartSearch() {
         // Gets the URL from the UI's text field.
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
+
                 if (!bSearchInProgress) {
                     gridAdapter.resetArray();
                     urlString = "https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&piprop=thumbnail&pithumbsize=50&pilimit=50&generator=prefixsearch&gpssearch=" +
@@ -103,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements NotifySearchResul
 
     //Final async task callback, to indicate search is complete. Final HTTP response.
     public void OnSearchCompleted() {
-        Log.d(TAG, "OnSearchCompleted callback from async task: ");
+        Log.d(TAG, "OnSearchCompleted callback from async task \n");
         gridAdapter.setArray(searchTask.getThumbnailURLS());
 
         if (searchTask.getThumbnailCount() == 0) {
@@ -121,10 +154,23 @@ public class MainActivity extends AppCompatActivity implements NotifySearchResul
 
     //This should be called 4 times from 5 different async tasks, for continued HTTP request and response.
     public void OnSearchInProgress() {
-        Log.d(TAG, "OnSearchInProgress callback from async task: ");
+        Log.d(TAG, "OnSearchInProgress callback from async task. \n");
         gridAdapter.setArray(searchTask.getThumbnailURLS());
         gridView.setVisibility(View.VISIBLE);
         gridView.setAdapter(gridAdapter);
+    }
+
+    public void OnSearchCancelled() {
+        Log.d(TAG, "OnSearchCancelled callback from async task. \n");
+        gridAdapter.resetArray();
+        bSearchInProgress = false;
+        gridView.setVisibility(gridView.INVISIBLE);
+        if (!urlText.getText().toString().isEmpty())
+            StartSearch();
+    }
+
+    public void OnSearchFailed() {
+        Log.d(TAG, "OnSearchFailed callback from async task. \n");
     }
 
 }
